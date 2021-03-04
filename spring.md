@@ -44,9 +44,13 @@
     3.XmlBeanFactory的初始化过程：  
         1.使用Resource实例作为构造函数参数进行初始化  
             super(parentBeanFactory);  
-                1.跟踪代码到父类AbstractAutowireCapableBeanFactory的构造函数，调用了ignoreDependencyInterface(xx.class)
+                1.跟踪代码到父类AbstractAutowireCapableBeanFactory的构造函数，调用了ignoreDependencyInterface()  
+                    [ignoreDependencyInterface(BeanNameAware.class);  
+                    ignoreDependencyInterface(BeanFactoryAware.class);  
+                    ignoreDependencyInterface(BeanClassLoaderAware.class);]  
                     ignoreDependencyInterface主要功能为：自动装配时忽略给定的依赖接口
+                    Spring的介绍：自动装配时忽略给定的依赖接口，典型应用是通过其他方式解析Application上下文注册依赖，
+                                类似于BeanFactory通过BeanFactoryAware进行注入或者ApplicationContext通过ApplicationContextAware进行注入                 
             this.reader.loadBeanDefinition(resource);资源加载的真正实现（XmlBeanDefinitionReader在这里实现加载数据）
-        2.super(parentBeanFactory);
-                 
+                        
             
