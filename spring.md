@@ -43,7 +43,7 @@
         例：Resource resource=new ClassPathResource("beanFactoryTest.xml);  
     3.XmlBeanFactory的初始化过程：  
         1.使用Resource实例作为构造函数参数进行初始化  
-            super(parentBeanFactory);  
+            1.super(parentBeanFactory);  
                 1.跟踪代码到父类AbstractAutowireCapableBeanFactory的构造函数，调用了ignoreDependencyInterface()  
                     [ignoreDependencyInterface(BeanNameAware.class);  
                     ignoreDependencyInterface(BeanFactoryAware.class);  
@@ -51,6 +51,14 @@
                     ignoreDependencyInterface主要功能为：自动装配时忽略给定的依赖接口
                     Spring的介绍：自动装配时忽略给定的依赖接口，典型应用是通过其他方式解析Application上下文注册依赖，
                                 类似于BeanFactory通过BeanFactoryAware进行注入或者ApplicationContext通过ApplicationContextAware进行注入                 
-            this.reader.loadBeanDefinition(resource);资源加载的真正实现（XmlBeanDefinitionReader在这里实现加载数据）
+            2.this.reader.loadBeanDefinition(resource);资源加载的真正实现（XmlBeanDefinitionReader在这里实现加载数据）
+                1.封装资源文件，当进入XmlBeanDefinitionReader后首先对参数Resource使用EncodedResource的类进行封装
+                2.获取输入流。从resource中获取对应的InputStream并构造InputSource。（通过SAX读取XML文件的方式来准备InputStream对象）
+                3.通过构造的InputSource实例和Resource实例继续调用doLoadBeanDefinition(inputSource, encodedResource.getResource());
+                    1.getValidationModeForResource(resource)：获取对XML文件的验证模式;
+                        1.DTD:文档类型定义，是一种XML约束模式语言，是XML文件的验证机制，属于XML文件组成的一部分。保证了XML文档格式正确性
+                        一个DTD文档包含：元素的定义规则，元素间关系的定义规则，元素可使用的属性，可使用的实体和符合规则
+                    2.loadDocument:加载xml文件，并得到对应的Document
+                    3.registerBeanDefinition(doc,resource)：根据返回的Document注册bean信息
                         
             
