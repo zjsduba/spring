@@ -56,9 +56,36 @@
                 2.获取输入流。从resource中获取对应的InputStream并构造InputSource。（通过SAX读取XML文件的方式来准备InputStream对象）
                 3.通过构造的InputSource实例和Resource实例继续调用doLoadBeanDefinition(inputSource, encodedResource.getResource());
                     1.getValidationModeForResource(resource)：获取对XML文件的验证模式;
-                        1.DTD:文档类型定义，是一种XML约束模式语言，是XML文件的验证机制，属于XML文件组成的一部分。保证了XML文档格式正确性
-                        一个DTD文档包含：元素的定义规则，元素间关系的定义规则，元素可使用的属性，可使用的实体和符合规则
+                        1.DTD与XSD区别
+                            1.DTD:文档类型定义，是一种XML约束模式语言，是XML文件的验证机制，属于XML文件组成的一部分。保证了XML文档格式正确性
+                            一个DTD文档包含：元素的定义规则，元素间关系的定义规则，元素可使用的属性，可使用的实体和符合规则
+                            2.XSD:XML Schema语言，描述了XML文档的结构。可以用一个指定的XML Schema来验证某个XML文件，以检查该XML文件是否符合其要求
+                            文档设计者可以通过XML Schema指定XML文档所允许的结构和内容，并可据此检查XML文档是否是有效的。XML Schema本身是XML文档，它符合XML
+                            语法结构。可以用通用的XML解析器解析它。
+                                1.需要声明名称空间(xmlns=http://www.Springframework.org/schema/beans)
+                                2.还需要指定该名称空间所对应的XML Schema文件的存储位置(xsi:)：通过schemaLocation属性指定名称空间所对应的XML Schema文档的存储位置（包含两部分：一个是名称空间的URL,
+                                一个是该名称空间所标识的XML Schema文件位置或URL）
+                        2.验证模式的读取
+                            1.实现规则：如果设定了验证模式则使用设定的验证模式（可以通过对调用XmlBeanDefinitionReader中的setValidationMode方法进行设定）；
+                            否则使用自动检测的方式
+                            2.自动检测验证模式的功能是在detectValidationMode方法中实现。在detectValidationMode方法中又将自动检测验证模式的工作委托给了专门处理类
+                            XmlValidationModeDetector，调用了XmlValidationModeDetector的validationModeDetector方法
                     2.loadDocument:加载xml文件，并得到对应的Document
+                        1.委托DocumentLoader（接口）的DefaultDocumentLoader实现类执行：通过SAX解析xml文档：
+                            1.创建DocumentBuilderFactory，通过该factory创建DocumentBuilder，进而解析inputSource来返回Document对象（其中有一个通过getEntityResolver()获取entityResolver）
+                            2.EntityResolver：如果SAX应用程序需要实现自定义处理外部实体，则必须实现此接口并使用setEntityResolver方法向SAX驱动器注册一个实例
+                            就是说，对于解析一个XML，SAX首先读取该XML文件上的声明，根据声明去寻找对应的DTD定义，以便对文档进行一个验证，默认的寻找规则是通过DTD文件声明的URL地址去下载相应的DTD声明，并进行认证
+                            EntityResolver的作用就是项目本身就可以提供一个如何寻找DTD声明的方法，即由程序来实现寻找DTD声明的过程，比如通过将DTD文件放到项目某处，来实现直接将此文档读取并返回给SAX即可。
                     3.registerBeanDefinition(doc,resource)：根据返回的Document注册bean信息
+                        1.BeanDefinitionDocumentReader documentReader=createBeanDefinitionDocumentReader():
+                        通过DefaultBeanDefinitionDocumentReader实例化BeanDefinitionDocumentReader;
+                        2.documentReader.setEnvironment(this.getEnvironment):documentReader设置环境变量
+                        3.int countBefore=getRegistry().getBeanDefinitionCount():
+                        在实例化BeanDefinitionReader的时候会将BeanDefinitionRegistry传入，默认使用继承自DefaultListableBeanFactory的子类
+                        记录统计前BeanDefinition的加载个数
+                        4.documentReader.registerBeanDefinitions(doce,createReaderContext(resource)):加载及注册bean
+                        5.return getRegistry().getBeanDefinitionCount()-countBefore:记录本次加载的beanDefinition个数
+                            
+                        
                         
             
